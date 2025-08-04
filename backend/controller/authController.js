@@ -1,9 +1,10 @@
 const OtpGenerate = require("../utils/otpGenerator");
 const User = require("../models/user");
 const response = require("../utils/responsehandler");
-const sendOtpTopEmail = require("../services/emailservice");
 const twilloService = require("../services/twilloService");
 const generateToken = require("../utils/generateToken");
+const { sendOtpTopEmail } = require("../services/emailservice");
+
 
 // send-1 send otp
 const sendOtp=async(req,res)=>{
@@ -11,10 +12,10 @@ const sendOtp=async(req,res)=>{
     const otp=OtpGenerate();
     const expiry=new Date(Date.now()+5*60*1000);
 
-    let user;
+    
     try{
         if(email){
-            user=await User.findOne({email});
+            let user=await User.findOne({email});
             if(!user){
                 user=await User.create({email});
             }
@@ -23,13 +24,13 @@ const sendOtp=async(req,res)=>{
             await user.save();
             await sendOtpTopEmail(email,otp);
 
-            response(res,{email},200,"Otp sent successfully");
+            return response(res,{email},200,"Otp sent successfully");
         }
         if(!phoneNumber || !phoneSuffix){
             return response(res,null,400,"Please enter phone number and suffix");
         }
         const fullphoneNumber=`${phoneSuffix}${phoneNumber}`;
-        user=await User.findOne({phoneNumber});
+       let user=await User.findOne({phoneNumber});
         if(!user){
             user=await User.create({phoneNumber,phoneSuffix});
         }
